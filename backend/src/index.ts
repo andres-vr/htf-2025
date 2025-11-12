@@ -24,6 +24,12 @@ app.use(cors());
 // Parse incoming JSON request bodies
 app.use(express.json());
 
+// Log any requests under /api/fish/serper for diagnostics
+app.use('/api/fish/serper', (req, _res, next) => {
+  console.log(`🔍 [serper] ${req.method} ${req.originalUrl}`);
+  next();
+});
+
 /**
  * GET /api/diving-centers
  * Retrieves all diving centers in the system.
@@ -86,7 +92,6 @@ app.get("/api/fish/enrich/:id", async (req, res) => {
       res.status(404).json({ error: "Fish not found" });
       return;
     }
-
     // Use species name as query to Serper
     const query = fish.name;
     const enrichment = await fetchFishData(query);
@@ -103,16 +108,59 @@ app.get("/api/fish/enrich/:id", async (req, res) => {
 });
 
 /**
- * POST /api/fish/serper
+ * GET /api/fish/serper/:query
+ * Proxy to Serper service: return enrichment for the provided query string.
+ */
+app.get('/api/fish/serper/:query', async (req, res) => {
+  try {
+    const q = req.params.query;
+    if (!q) {
+      res.status(400).json({ error: 'Missing query' });
+      return;
+    }
+    const enrichment = await fetchFishData(q);
+    if (!enrichment) {
+      res.status(502).json({ error: 'Failed to fetch enrichment from Serper' });
+      return;
+    }
+    res.json({ query: q, enrichment });
+  } catch (err) {
+    console.error('Error in /api/fish/serper/:query', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Also accept query via querystring: /api/fish/serper?q=...
+app.get('/api/fish/serper', async (req, res) => {
+  try {
+    const q = String(req.query.q || '');
+    if (!q) {
+      res.status(400).json({ error: 'Missing query parameter q' });
+      return;
+    }
+    const enrichment = await fetchFishData(q);
+    if (!enrichment) {
+      res.status(502).json({ error: 'Failed to fetch enrichment from Serper' });
+      return;
+    }
+    res.json({ query: q, enrichment });
+  } catch (err) {
+    console.error('Error in /api/fish/serper (query)', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * POST /api/fish/serper/:query
  * Minimal receiver for enrichment payloads coming from serperService.fetchAndSendFishData.
  * This will log the incoming payload and return 200. In the future we could persist
  * the enrichment to the DB or associate it with the fish record.
  */
-app.post('/api/fish/serper', async (req, res) => {
+app.post('/api/fish/serper/:query', async (req, res) => {
   try {
     console.log('📥 /api/fish/serper payload:', req.body);
-    // TODO: persist enrichment to DB or associate with fish by query
-    res.status(200).json({ ok: true });
+    const data = await fetchFishData(req.params.query);
+    res.status(200).json({ data });
   } catch (error) {
     console.error('Error receiving serper payload', error);
     res.status(500).json({ error: 'Failed to receive enrichment' });

@@ -2,6 +2,7 @@ import { Fish } from "@/types/fish";
 import { getRarityBadgeClass, getRarityColorClass } from "@/utils/rarity";
 import { formatDistanceToNow } from "date-fns";
 import { useEffect, useState } from 'react';
+import LiveTemperature from "./LiveTemperature";
 import TemperatureGraph from "./TemperatureGraph";
 
 type TempSensor = {
@@ -16,6 +17,8 @@ interface FishDetailsProps {
 
 export default function FishDetails({ fish }: FishDetailsProps) {
   const [nearestSensorId, setNearestSensorId] = useState<string | undefined>(undefined);
+  const [serperData, setSerperData] = useState<{ description: string | null; descriptionLink: string | null; scientificName: string | null } | null>(null);
+  const [serperLoading, setSerperLoading] = useState(false);
 
   useEffect(() => {
     if (!fish) return;
@@ -58,6 +61,31 @@ export default function FishDetails({ fish }: FishDetailsProps) {
     }
 
     findNearest();
+    
+    // fetch enrichment from backend serper proxy
+    const fetchSerper = async () => {
+      try {
+        setSerperLoading(true);
+        setSerperData(null);
+        const q = encodeURIComponent(fish.name);
+        const res = await fetch(`http://localhost:5555/api/fish/serper/${q}`);
+        if (!res.ok) {
+          console.warn('Serper fetch failed', await res.text());
+          setSerperData(null);
+          return;
+        }
+        const payload = await res.json();
+        console.log(payload);
+        setSerperData(payload?.enrichment ?? null);
+      } catch (err) {
+        console.error('Failed to fetch serper enrichment', err);
+        setSerperData(null);
+      } finally {
+        setSerperLoading(false);
+      }
+    };
+
+    fetchSerper();
   }, [fish]);
   if (!fish) {
     return (
@@ -80,17 +108,42 @@ export default function FishDetails({ fish }: FishDetailsProps) {
         />
       </div>
 
-      {/* Fish Name */}
-      <div className="mb-4">
-        <div className="text-xs text-text-secondary font-mono mb-1">SPECIES</div>
-        <div className={`text-lg font-bold ${getRarityColorClass(fish.rarity)}`}>{fish.name}</div>
+       {/* Fish Name & Scientific Name */}
+      <div className="mb-4 flex flex-row">
+        <div className="flex flex-col">
+          <div className="text-xs text-text-secondary font-mono mb-1">SPECIES</div>
+          <div className={`text-lg font-bold ${getRarityColorClass(fish.rarity)}`}>{fish.name}</div>
+        </div>
+        <div className="flex flex-col ml-6">
+        <div className="text-xs text-text-secondary font-mono mt-3 mb-1">SCIENTIFIC NAME</div>
+        <div className="text-sm">{serperLoading ? 'Loading…' : (serperData?.scientificName ?? '—')}</div>
+      </div>
+      <div className="flex flex-col ml-6">
+        <div className="text-xs text-text-secondary font-mono mt-3 mb-1">LEARN MORE</div>
+        <a className="text-sm text-blue-600 hover:text-shadow-blue-400
+        " href={serperData?.descriptionLink ?? '#'} target="_blank" rel="noopener noreferrer">Wikipedia</a>
+        </div>
       </div>
 
-      {/* Rarity */}
-      <div className="mb-4">
-        <div className="text-xs text-text-secondary font-mono mb-1">RARITY</div>
-        <div className={`text-base inline-block px-6 py-2 rounded text-[10px] font-bold ${getRarityBadgeClass(fish.rarity)}`}>
+      {/* Rarity & Description Side-by-Side */}
+      <div className="mb-4 flex flex-row gap-4">
+        <div className="flex flex-col">
+           <div className="text-xs text-text-secondary font-mono mb-1">RARITY</div>
+            <div className={`text-base inline-block px-6 py-2 rounded text-[10px] font-bold ${getRarityBadgeClass(fish.rarity)}`}>
           {fish.rarity}
+           </div>
+        </div>
+        <div className="flex flex-col flex-1">
+          <div className="text-xs text-text-secondary font-mono mb-1">DESCRIPTION</div>
+          <div className="text-sm">
+          {serperLoading && <span>Loading description…</span>}
+          {!serperLoading && serperData?.description && (
+            <div className="text-sm text-text-primary">
+              {serperData.description}
+            </div>
+          )}
+          {!serperLoading && !serperData?.description && <div className="text-sm text-text-secondary">No description available.</div>}
+        </div>
         </div>
       </div>
 
@@ -118,7 +171,8 @@ export default function FishDetails({ fish }: FishDetailsProps) {
           </div>
         )}
       </div>
-      <TemperatureGraph sensorId={nearestSensorId} />
+  <LiveTemperature sensorId={nearestSensorId} pollIntervalMs={1000} />
+  <TemperatureGraph sensorId={nearestSensorId} />
       {/* Last Seen */}
       {fish.latestSighting && (
         <div>
