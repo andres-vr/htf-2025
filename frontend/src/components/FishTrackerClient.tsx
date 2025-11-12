@@ -44,6 +44,7 @@ export default function FishTrackerClient({
                 fishes={fishes} 
                 hoveredFishId={hoveredFishId}
                 onFishSelect={setSelectedFish}
+                selectedFish={selectedFish}
               />
               {/* Show live weather for the selected fish's latest sighting (if available) */}
               {selectedFish?.latestSighting && (
