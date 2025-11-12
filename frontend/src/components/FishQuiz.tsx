@@ -24,11 +24,15 @@ export default function FishQuiz({ open, fish, scientificName, onClose }: FishQu
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const [result, setResult] = useState<"correct" | "incorrect" | null>(null);
+  const [mode, setMode] = useState<"picture" | "scientific" | "random">("random");
+  const [effectiveMode, setEffectiveMode] = useState<"picture" | "scientific">(() => (Math.random() < 0.5 ? 'picture' : 'scientific'));
 
   useEffect(() => {
     if (!open) return;
     setSelected(null);
     setResult(null);
+    // determine effective mode for this question when modal opens
+    setEffectiveMode(mode === 'random' ? (Math.random() < 0.5 ? 'picture' : 'scientific') : mode);
     const load = async () => {
       setLoading(true);
       try {
@@ -57,7 +61,9 @@ export default function FishQuiz({ open, fish, scientificName, onClose }: FishQu
 
   if (!open) return null;
 
-  const question = scientificName ? `What is the common name for ${scientificName}?` : `Which of these is another name for ${fish.name}?`;
+  const question = effectiveMode === "scientific"
+    ? (scientificName ? `What is the common name for ${scientificName}?` : `Which of these is another name for ${fish.name}?`)
+    : `Which fish is shown in this picture?`;
 
   const onSelect = (opt: string) => {
     setSelected(opt);
@@ -69,9 +75,23 @@ export default function FishQuiz({ open, fish, scientificName, onClose }: FishQu
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
       <div className="relative w-full max-w-md mx-4 bg-[color-mix(in_srgb,var(--color-dark-navy)_95%,transparent)] border border-panel-border rounded p-4">
         <div className="flex justify-between items-center mb-3">
-          <div className="text-sm font-bold">Fish Quiz</div>
+          <div className="flex items-center gap-3">
+            <div className="text-sm font-bold">Fish Quiz</div>
+            <div className="flex items-center rounded border border-panel-border overflow-hidden">
+              <button className={`px-2 py-1 text-xs ${mode === 'picture' ? 'bg-[color-mix(in_srgb,var(--color-sonar-green)_6%,transparent)]' : ''}`} onClick={() => { setMode('picture'); setEffectiveMode('picture'); }}>Picture</button>
+              <button className={`px-2 py-1 text-xs ${mode === 'scientific' ? 'bg-[color-mix(in_srgb,var(--color-sonar-green)_6%,transparent)]' : ''}`} onClick={() => { setMode('scientific'); setEffectiveMode('scientific'); }}>Scientific</button>
+              <button className={`px-2 py-1 text-xs ${mode === 'random' ? 'bg-[color-mix(in_srgb,var(--color-sonar-green)_6%,transparent)]' : ''}`} onClick={() => { setMode('random'); setEffectiveMode(Math.random() < 0.5 ? 'picture' : 'scientific'); }}>Random</button>
+            </div>
+          </div>
           <button className="text-xs text-text-secondary" onClick={onClose}>Close</button>
         </div>
+
+        {/* image for the fish (if available) - only show for picture questions */}
+        {effectiveMode === 'picture' && fish.image && (
+          <div className="mb-3 flex justify-center">
+            <img src={fish.image} alt={fish.name} className="w-40 h-28 object-cover rounded border border-panel-border shadow-[--shadow-cockpit]" />
+          </div>
+        )}
 
         <div className="mb-3 text-sm text-text-primary">{question}</div>
 

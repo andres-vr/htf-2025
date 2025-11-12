@@ -8,8 +8,10 @@ export default function GlobalQuiz({ open, onClose }: { open: boolean; onClose: 
   const [options, setOptions] = useState<string[]>([]);
   const [currentFish, setCurrentFish] = useState<Fish | null>(null);
   const [questionText, setQuestionText] = useState<string>("");
+  const [mode, setMode] = useState<"picture" | "scientific" | "random">("random");
   const [selected, setSelected] = useState<string | null>(null);
   const [result, setResult] = useState<"correct" | "incorrect" | null>(null);
+  const [effectiveMode, setEffectiveMode] = useState<"picture" | "scientific">("picture");
   const [score, setScore] = useState(0);
   const [asked, setAsked] = useState(0);
 
@@ -46,8 +48,18 @@ export default function GlobalQuiz({ open, onClose }: { open: boolean; onClose: 
         return;
       }
 
-      // pick a random fish
-      const pick = all[Math.floor(Math.random() * all.length)];
+  // decide effective mode for this question (allow per-question randomization)
+  const _effectiveMode = mode === "random" ? (Math.random() < 0.5 ? "picture" : "scientific") : mode;
+  setEffectiveMode(_effectiveMode);
+
+      // pick a random fish; if picture effective mode, prefer fishes with images when possible
+      let pick = all[Math.floor(Math.random() * all.length)];
+      if (effectiveMode === "picture") {
+        const withImages = all.filter((f) => !!f.image);
+        if (withImages.length > 0) {
+          pick = withImages[Math.floor(Math.random() * withImages.length)];
+        }
+      }
       setCurrentFish(pick);
 
       // try to fetch enrichment (scientific name) for better question phrasing
@@ -62,9 +74,11 @@ export default function GlobalQuiz({ open, onClose }: { open: boolean; onClose: 
         // ignore
       }
 
-      const question = scientific
+      const question = _effectiveMode === "scientific" && scientific
         ? `Which common name corresponds to the scientific name "${scientific}"?`
-        : `Which of these is another name for "${pick.name}"?`;
+        : _effectiveMode === "scientific"
+          ? `Which of these is another name for "${pick.name}"?`
+          : `Which fish is shown in this picture?`;
 
       // build distractors
       const names = all.map((f) => f.name).filter((n) => n !== pick.name);
@@ -74,7 +88,7 @@ export default function GlobalQuiz({ open, onClose }: { open: boolean; onClose: 
         [names[i], names[j]] = [names[j], names[i]];
       }
       const picks = names.slice(0, 3);
-      const opts = [pick.name, ...picks].sort(() => Math.random() - 0.5);
+  const opts = [pick.name, ...picks].sort(() => Math.random() - 0.5);
 
       setQuestionText(question);
       setOptions(opts);
@@ -103,12 +117,28 @@ export default function GlobalQuiz({ open, onClose }: { open: boolean; onClose: 
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
       <div className="relative w-full max-w-xl mx-4 bg-[color-mix(in_srgb,var(--color-dark-navy)_95%,transparent)] border border-panel-border rounded p-4">
         <div className="flex justify-between items-center mb-3">
-          <div className="text-sm font-bold">Global Fish Quiz</div>
-          <div className="text-xs text-text-secondary">Score: {score} / {asked}</div>
+            <div className="flex items-center gap-3">
+              <div className="text-sm font-bold">Global Fish Quiz</div>
+              <div className="flex items-center rounded border border-panel-border overflow-hidden">
+                <button className={`px-2 py-1 text-xs ${mode === 'picture' ? 'bg-[color-mix(in_srgb,var(--color-sonar-green)_6%,transparent)]' : ''}`} onClick={() => setMode('picture')}>Picture</button>
+                <button className={`px-2 py-1 text-xs ${mode === 'scientific' ? 'bg-[color-mix(in_srgb,var(--color-sonar-green)_6%,transparent)]' : ''}`} onClick={() => setMode('scientific')}>Scientific</button>
+                <button className={`px-2 py-1 text-xs ${mode === 'random' ? 'bg-[color-mix(in_srgb,var(--color-sonar-green)_6%,transparent)]' : ''}`} onClick={() => setMode('random')}>Random</button>
+              </div>
+            </div>
+            <div className="text-xs text-text-secondary">Score: {score} / {asked}</div>
         </div>
 
         <div className="mb-3 text-sm text-text-primary">{loading ? 'Loading question...' : questionText}</div>
-
+        {/* Show fish image only for picture questions */}
+        {effectiveMode === 'picture' && currentFish?.image && (
+          <div className="mb-3 flex justify-center">
+            <img
+              src={currentFish.image}
+              alt={currentFish.name}
+              className="w-40 h-28 object-cover rounded border border-panel-border shadow-[--shadow-cockpit]"
+            />
+          </div>
+        )}
         <div className="flex flex-col gap-2">
           {options.map((opt) => (
             <button
