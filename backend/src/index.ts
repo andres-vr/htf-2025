@@ -62,7 +62,7 @@ app.get("/api/fish", async (req, res) => {
  */
 app.get("/api/fish/rarity/:rarity", async (req, res) => {
   try {
-    const fishes = await getFishByRarity(req.params.rarity as FishRarity);
+    const fishes = await getFishByRarity(req.params.rarity);
     if (!fishes || fishes.length === 0) {
       res.status(404).json({ error: "Fish not found" });
       return;

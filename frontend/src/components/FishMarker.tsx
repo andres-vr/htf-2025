@@ -8,12 +8,14 @@ interface FishMarkerProps {
   fish: Fish;
   isHovered: boolean;
   isAnyHovered: boolean;
+  onSelect?: () => void;
 }
 
 export default function FishMarker({
   fish,
   isHovered,
   isAnyHovered,
+  onSelect,
 }: FishMarkerProps) {
   const pulseClass = getRarityPulseClass(fish.rarity);
 
@@ -38,8 +40,9 @@ export default function FishMarker({
       latitude={fish.latestSighting.latitude}
     >
       <div
-        className={`relative group cursor-pointer hover:z-[9999] transition-opacity duration-200 ${isDimmed ? "opacity-20" : "opacity-100"} ${isHovered ? "z-[9999]" : "z-auto"}`}
+        className={`relative group cursor-pointer hover:z-9999 transition-opacity duration-200 ${isDimmed ? "opacity-20" : "opacity-100"} ${isHovered ? "z-9999" : "z-auto"}`}
         title={fish.name}
+        onClick={onSelect}
       >
         {/* Pulsing ring effect - only animate if not dimmed */}
         <div

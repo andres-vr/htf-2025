@@ -10,14 +10,22 @@ import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 interface FishTrackerClientProps {
   fishes: Fish[];
   sortedFishes: Fish[];
+  selectedFish?: Fish | null;
+  onFishSelect?: (fish: Fish | null) => void;
 }
 
 export default function FishTrackerClient({
   fishes,
   sortedFishes,
+  selectedFish: parentSelectedFish,
+  onFishSelect: parentOnFishSelect,
 }: FishTrackerClientProps) {
   const [hoveredFishId, setHoveredFishId] = useState<string | null>(null);
-  const [selectedFish, setSelectedFish] = useState<Fish | null>(null);
+  const [localSelectedFish, setLocalSelectedFish] = useState<Fish | null>(null);
+  
+  // Use parent's selectedFish if provided, otherwise use local state
+  const selectedFish = parentSelectedFish ?? localSelectedFish;
+  const setSelectedFish = parentOnFishSelect ?? setLocalSelectedFish;
 
   return (
     <PanelGroup
@@ -31,7 +39,11 @@ export default function FishTrackerClient({
           {/* Map Panel */}
           <Panel defaultSize={65} minSize={30}>
             <div className="w-full h-full relative shadow-[--shadow-map-panel]">
-              <Map fishes={fishes} hoveredFishId={hoveredFishId} />
+              <Map 
+                fishes={fishes} 
+                hoveredFishId={hoveredFishId}
+                onFishSelect={setSelectedFish}
+              />
             </div>
           </Panel>
 

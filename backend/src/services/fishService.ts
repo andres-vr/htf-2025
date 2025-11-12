@@ -93,38 +93,56 @@ export const getFishById = async (id: string) => {
  * (unlike getAllFish which only returns the latest sighting). Sighting data
  * is filtered to only include location and timestamp information.
  */
-export const getFishByRarity = async (rarity: FishRarity) => {
-    // Fetch the specific fish with all of its sightings
-    let fishes
-    if (rarity === 'ALL') {
+export const getFishByRarity = async (rarity: string | FishRarity) => {
+    // Fetch fish by rarity with their most recent sighting
+    let fishes;
+    
+    if (rarity === 'ALL' || rarity.toString().toUpperCase() === 'ALL') {
         fishes = await prisma.fish.findMany({
             include: {
-                sightings: true
+                sightings: {
+                    orderBy: {
+                        timestamp: 'desc'
+                    },
+                    take: 1
+                }
             }
         });
     } else {
-    fishes = await prisma.fish.findMany({
-        where: {
-            rarity
-        },
-        include: {
-            sightings: true
-        }});
+        // Convert string to FishRarity enum value
+        const rarityValue = rarity.toString().toUpperCase() as FishRarity;
+        
+        fishes = await prisma.fish.findMany({
+            where: {
+                rarity: rarityValue
+            },
+            include: {
+                sightings: {
+                    orderBy: {
+                        timestamp: 'desc'
+                    },
+                    take: 1
+                }
+            }
+        });
     }
-    // Return null if fish doesn't exist
+    
+    // Return null if no fish found
     if (!fishes) {
         return null;
     }
 
-    // Transform sightings to only include relevant location data
-    // This filters out internal database fields (like sighting ID, fishId, etc.)
-    // and provides a clean API response with only what clients need
-    return fishes.map(fish => ({
-        ...fish,
-        sightings: fish.sightings.map(sighting => ({
-            latitude: sighting.latitude,
-            longitude: sighting.longitude,
-            timestamp: sighting.timestamp
-        }))
-    }));
+    // Transform the data structure to match getAllFish format
+    // Return fish data with latestSighting instead of sightings array
+    return fishes.map(({sightings, ...f}) => {
+        const sighting = sightings[0];
+        return {
+            ...f,
+            latestSighting: sighting ? {
+                latitude: sighting.latitude,
+                longitude: sighting.longitude,
+                timestamp: sighting.timestamp
+            } : null  // null if fish has never been sighted
+        };
+    });
 };

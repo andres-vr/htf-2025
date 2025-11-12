@@ -9,6 +9,7 @@ import FishMarker from "./FishMarker";
 interface MapComponentProps {
   fishes: Fish[];
   hoveredFishId: string | null;
+  onFishSelect?: (fish: Fish) => void;
 }
 
 const calculateMapCenter = (fishes: Fish[]) => {
@@ -17,11 +18,11 @@ const calculateMapCenter = (fishes: Fish[]) => {
   }
 
   const totalLat = fishes.reduce(
-    (sum, fish) => sum + fish.latestSighting.latitude,
+    (sum, fish) => sum + (fish.latestSighting?.latitude || 0),
     0
   );
   const totalLon = fishes.reduce(
-    (sum, fish) => sum + fish.latestSighting.longitude,
+    (sum, fish) => sum + (fish.latestSighting?.longitude || 0),
     0
   );
 
@@ -34,6 +35,7 @@ const calculateMapCenter = (fishes: Fish[]) => {
 export default function MapComponent({
   fishes,
   hoveredFishId,
+  onFishSelect,
 }: MapComponentProps) {
   const mapRef = useRef<MapRef>(null);
   const { latitude, longitude } = calculateMapCenter(fishes);
@@ -58,6 +60,7 @@ export default function MapComponent({
             fish={fish}
             isHovered={fish.id === hoveredFishId}
             isAnyHovered={isAnyHovered}
+            onSelect={() => onFishSelect?.(fish)}
           />
         ))}
       </Map>

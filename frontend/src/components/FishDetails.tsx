@@ -45,34 +45,42 @@ export default function FishDetails({ fish }: FishDetailsProps) {
       {/* Location */}
       <div className="mb-4">
         <div className="text-xs text-text-secondary font-mono mb-2">LAST SIGHTING LOCATION</div>
-        <div className="bg-[color-mix(in_srgb,var(--color-deep-ocean)_80%,transparent)] border border-panel-border rounded p-3 space-y-2">
-          <div className="flex justify-between items-center">
-            <span className="text-xs text-text-secondary">Latitude:</span>
-            <span className="text-sm font-mono text-sonar-green">
-              {fish.latestSighting.latitude.toFixed(6)}
-            </span>
+        {fish.latestSighting ? (
+          <div className="bg-[color-mix(in_srgb,var(--color-deep-ocean)_80%,transparent)] border border-panel-border rounded p-3 space-y-2">
+            <div className="flex justify-between items-center">
+              <span className="text-xs text-text-secondary">Latitude:</span>
+              <span className="text-sm font-mono text-sonar-green">
+                {fish.latestSighting.latitude.toFixed(6)}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-xs text-text-secondary">Longitude:</span>
+              <span className="text-sm font-mono text-sonar-green">
+                {fish.latestSighting.longitude.toFixed(6)}
+              </span>
+            </div>
           </div>
-          <div className="flex justify-between items-center">
-            <span className="text-xs text-text-secondary">Longitude:</span>
-            <span className="text-sm font-mono text-sonar-green">
-              {fish.latestSighting.longitude.toFixed(6)}
-            </span>
+        ) : (
+          <div className="bg-[color-mix(in_srgb,var(--color-deep-ocean)_80%,transparent)] border border-panel-border rounded p-3">
+            <span className="text-xs text-text-secondary">No sightings recorded</span>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Last Seen */}
-      <div>
-        <div className="text-xs text-text-secondary font-mono mb-1">LAST SEEN</div>
-        <div className="text-sm text-sonar-green">
-          {formatDistanceToNow(new Date(fish.latestSighting.timestamp), { 
-            addSuffix: true 
-          })}
+      {fish.latestSighting && (
+        <div>
+          <div className="text-xs text-text-secondary font-mono mb-1">LAST SEEN</div>
+          <div className="text-sm text-sonar-green">
+            {formatDistanceToNow(new Date(fish.latestSighting.timestamp), { 
+              addSuffix: true 
+            })}
+          </div>
+          <div className="text-xs text-text-secondary font-mono mt-2">
+            {new Date(fish.latestSighting.timestamp).toLocaleString()}
+          </div>
         </div>
-        <div className="text-xs text-text-secondary font-mono mt-2">
-          {new Date(fish.latestSighting.timestamp).toLocaleString()}
-        </div>
-      </div>
+      )}
     </div>
   );
 }
