@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { Fish } from "@/types/fish";
+import { WavesIcon } from "lucide-react";
+import { useState } from "react";
 import { UserInfo } from "./AuthProvider";
 import FishTrackerClient from "./FishTrackerClient";
 import { BaseSearchBar } from "./SearchBar";
@@ -22,6 +23,7 @@ export default function FishTrackerLayout({ fishes, sortedFishes }: FishTrackerL
       {/* Header */}
       <div className="bg-[color-mix(in_srgb,var(--color-dark-navy)_85%,transparent)] border-2 border-panel-border shadow-[--shadow-cockpit] backdrop-blur-[10px] px-6 py-3 border-b-2 border-panel-border flex items-center justify-between z-10">
         <div className="flex items-center gap-4">
+          <WavesIcon className="text-blue-700" size={28} />
       <div className="text-2xl font-bold text-shadow-[--shadow-glow-text] text-sonar-green" style={{ fontFamily: "var(--font-orbitron), var(--font-geist-sans)" }}>
         AquaVista
       </div>

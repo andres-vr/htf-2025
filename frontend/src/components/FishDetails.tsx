@@ -172,7 +172,7 @@ export default function FishDetails({ fish }: FishDetailsProps) {
         )}
       </div>
   <LiveTemperature sensorId={nearestSensorId} pollIntervalMs={1000} />
-  <TemperatureGraph sensorId={nearestSensorId} />
+  <TemperatureGraph sensorId={nearestSensorId} rarity={fish.rarity} />
       {/* Last Seen */}
       {fish.latestSighting && (
         <div>

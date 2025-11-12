@@ -11,6 +11,7 @@ import cors from "cors";
 import express from "express";
 import { getAllDivingCenters } from "./services/divingCenterService";
 import { getAllFish, getFishById, getFishByRarity } from "./services/fishService";
+import { getForecastForSensor } from "./services/forecastService";
 import { startFishSightingUpdates, startTemperatureSensorUpdates, } from "./services/scheduledJobService";
 import { fetchFishData } from "./services/serperService";
 import { getAllTemperatureReadings, getTemperatureReadingsForSensorId } from "./services/temperatureReadingService";
@@ -244,6 +245,24 @@ app.get('/api/weather', async (req, res) => {
   } catch (err) {
     console.error('Error fetching weather:', err);
     res.status(502).json({ error: 'Failed to fetch weather' });
+  }
+});
+
+/**
+ * GET /api/temperatures/:id/forecast
+ * Returns a forecast for a sensor by asking an AI to continue the pattern.
+ * Query params: points (default 12), stepMinutes (default 5)
+ */
+app.get('/api/temperatures/:id/forecast', async (req, res) => {
+  try {
+    const id = String(req.params.id);
+    const points = req.query.points ? Math.max(1, Number(req.query.points)) : 12;
+    const stepMinutes = req.query.stepMinutes ? Math.max(1, Number(req.query.stepMinutes)) : 5;
+    const forecast = await getForecastForSensor(id, points, stepMinutes);
+    res.json({ sensorId: id, forecast });
+  } catch (err: any) {
+    console.error('Error generating forecast', err);
+    res.status(500).json({ error: err?.message ?? 'Failed to generate forecast' });
   }
 });
 

@@ -103,6 +103,45 @@ export default function MapComponent({
           });
         });
 
+        // Simple client-side location forecast (linear extrapolation) based on the last two sightings.
+        // This produces a short sequence of predicted coords appended after the newest sighting.
+        const forecastCount = 3; // number of future points to predict
+        if (recent.length >= 2) {
+          const last = recent[recent.length - 1];
+          const prev = recent[recent.length - 2];
+          const dx = last.longitude - prev.longitude;
+          const dy = last.latitude - prev.latitude;
+
+          // Avoid degenerate forecasts if points are identical
+          if (Math.abs(dx) > 0 || Math.abs(dy) > 0) {
+            const forecastCoords: Array<[number, number]> = [];
+            for (let i = 1; i <= forecastCount; i++) {
+              const lon = last.longitude + dx * i;
+              const lat = last.latitude + dy * i;
+              forecastCoords.push([lon, lat]);
+            }
+
+            // Forecast line starting from the last real point to the predicted points
+            features.push({
+              type: "Feature",
+              properties: { isForecast: true },
+              geometry: {
+                type: "LineString",
+                coordinates: [ [last.longitude, last.latitude], ...forecastCoords ],
+              },
+            });
+
+            // Forecast point features
+            forecastCoords.forEach((c, idx) => {
+              features.push({
+                type: "Feature",
+                properties: { isForecast: true, forecastIndex: idx },
+                geometry: { type: "Point", coordinates: c },
+              });
+            });
+          }
+        }
+
         const geojson = { type: "FeatureCollection", features };
         if (mounted) setTrajectoryGeoJson(geojson);
       } catch (err) {
@@ -152,6 +191,8 @@ export default function MapComponent({
                 <Layer
                   id="trajectory-line"
                   type="line"
+                  // only draw non-forecast lines here
+                  filter={["!=", ["get", "isForecast"], true]}
                   paint={{
                     // use rarity color for the recent path
                     "line-color": pathColor,
@@ -163,6 +204,8 @@ export default function MapComponent({
                 <Layer
                   id="trajectory-points"
                   type="circle"
+                  // only draw non-forecast points
+                  filter={["!=", ["get", "isForecast"], true]}
                   paint={{
                     "circle-radius": 4,
                     // keep points same rarity color so the path reads as a unit
@@ -182,6 +225,33 @@ export default function MapComponent({
                     "circle-stroke-width": 2,
                     // use rarity color around white core for visibility
                     "circle-stroke-color": pathColor,
+                  }}
+                />
+
+                {/* Forecast: dashed purple line + small purple points */}
+                <Layer
+                  id="trajectory-forecast-line"
+                  type="line"
+                  // only draw forecast features
+                  filter={["==", ["get", "isForecast"], true]}
+                  paint={{
+                    "line-color": "#5b21b6",
+                    "line-width": 3,
+                    "line-opacity": 0.95,
+                    // dashed
+                    "line-dasharray": [2, 4],
+                  }}
+                />
+
+                <Layer
+                  id="trajectory-forecast-points"
+                  type="circle"
+                  filter={["==", ["get", "isForecast"], true]}
+                  paint={{
+                    "circle-radius": 4,
+                    "circle-color": "#5b21b6",
+                    "circle-stroke-width": 1,
+                    "circle-stroke-color": "#0a1628",
                   }}
                 />
               </Source>
