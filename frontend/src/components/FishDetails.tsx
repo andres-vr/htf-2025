@@ -100,11 +100,11 @@ export default function FishDetails({ fish }: FishDetailsProps) {
   return (
     <div className="h-full flex flex-col p-4 border-l border-panel-border overflow-y-auto">
       {/* Fish Image */}
-      <div className="mb-4 rounded-lg overflow-hidden border border-panel-border shadow-[--shadow-cockpit-border]">
+      <div className="mb-4 rounded-lg overflow-hidden border border-panel-border shadow-[--shadow-cockpit-border] h-64 shrink-0">
         <img 
           src={fish.image} 
           alt={fish.name} 
-          className="w-full h-48 object-cover"
+          className="w-full h-full object-cover"
         />
       </div>
 
