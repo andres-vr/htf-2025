@@ -9,10 +9,10 @@
 
 import cors from "cors";
 import express from "express";
-import { FishRarity } from "./generated/prisma";
 import { getAllDivingCenters } from "./services/divingCenterService";
 import { getAllFish, getFishById, getFishByRarity } from "./services/fishService";
 import { startFishSightingUpdates, startTemperatureSensorUpdates, } from "./services/scheduledJobService";
+import { fetchFishData } from "./services/serperService";
 import { getAllTemperatureReadings, getTemperatureReadingsForSensorId } from "./services/temperatureReadingService";
 
 // Initialize Express application
@@ -71,6 +71,51 @@ app.get("/api/fish/rarity/:rarity", async (req, res) => {
   } catch (error) {
     console.error("Error fetching fish by rarity:", error);
     res.status(500).json({ error: "Failed to fetch fish" });
+  }
+});
+
+/**
+ * GET /api/fish/enrich/:id
+ * Fetches enrichment data for a fish species using the Serper service.
+ * Returns the enrichment payload (description, link, scientificName) or 404 if fish not found.
+ */
+app.get("/api/fish/enrich/:id", async (req, res) => {
+  try {
+    const fish = await getFishById(req.params.id);
+    if (!fish) {
+      res.status(404).json({ error: "Fish not found" });
+      return;
+    }
+
+    // Use species name as query to Serper
+    const query = fish.name;
+    const enrichment = await fetchFishData(query);
+    if (!enrichment) {
+      res.status(502).json({ error: "Failed to fetch enrichment data" });
+      return;
+    }
+
+    res.json({ fishId: fish.id, enrichment });
+  } catch (error) {
+    console.error("Error enriching fish:", error);
+    res.status(500).json({ error: "Failed to enrich fish" });
+  }
+});
+
+/**
+ * POST /api/fish/serper
+ * Minimal receiver for enrichment payloads coming from serperService.fetchAndSendFishData.
+ * This will log the incoming payload and return 200. In the future we could persist
+ * the enrichment to the DB or associate it with the fish record.
+ */
+app.post('/api/fish/serper', async (req, res) => {
+  try {
+    console.log('📥 /api/fish/serper payload:', req.body);
+    // TODO: persist enrichment to DB or associate with fish by query
+    res.status(200).json({ ok: true });
+  } catch (error) {
+    console.error('Error receiving serper payload', error);
+    res.status(500).json({ error: 'Failed to receive enrichment' });
   }
 });
 

@@ -1,12 +1,64 @@
 import { Fish } from "@/types/fish";
 import { getRarityBadgeClass, getRarityColorClass } from "@/utils/rarity";
 import { formatDistanceToNow } from "date-fns";
+import { useEffect, useState } from 'react';
+import TemperatureGraph from "./TemperatureGraph";
+
+type TempSensor = {
+  id: string;
+  latitude: number;
+  longitude: number;
+};
 
 interface FishDetailsProps {
   fish: Fish | null;
 }
 
 export default function FishDetails({ fish }: FishDetailsProps) {
+  const [nearestSensorId, setNearestSensorId] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (!fish) return;
+
+    const findNearest = async () => {
+      try {
+        const res = await fetch('http://localhost:5555/api/temperatures');
+        if (!res.ok) return;
+        const sensors: TempSensor[] = await res.json();
+        if (!sensors || sensors.length === 0) return;
+
+        // simple haversine distance
+        const toRad = (v: number) => (v * Math.PI) / 180;
+        const haversine = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+          const R = 6371; // km
+          const dLat = toRad(lat2 - lat1);
+          const dLon = toRad(lon2 - lon1);
+          const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2);
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+          return R * c;
+        }
+
+        let best: TempSensor | null = null;
+        let bestDist = Infinity;
+        for (const s of sensors) {
+          // some sensors returned may have lastReading and other keys; ensure lat/lon present
+          const lat = (s as any).latitude ?? (s as any).lat ?? null;
+          const lon = (s as any).longitude ?? (s as any).lon ?? null;
+          if (lat == null || lon == null) continue;
+          const d = haversine(fish.latestSighting.latitude, fish.latestSighting.longitude, lat, lon);
+          if (d < bestDist) {
+            bestDist = d;
+            best = s;
+          }
+        }
+        if (best) setNearestSensorId(best.id);
+      } catch (err) {
+        console.error('Failed to get temperature sensors', err);
+      }
+    }
+
+    findNearest();
+  }, [fish]);
   if (!fish) {
     return (
       <div className="flex items-center justify-center h-full text-text-secondary">
@@ -66,7 +118,7 @@ export default function FishDetails({ fish }: FishDetailsProps) {
           </div>
         )}
       </div>
-
+      <TemperatureGraph sensorId={nearestSensorId} />
       {/* Last Seen */}
       {fish.latestSighting && (
         <div>

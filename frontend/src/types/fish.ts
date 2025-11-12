@@ -11,3 +11,10 @@ export interface Fish {
 }
 
 export type Rarity = "COMMON" | "RARE" | "EPIC";
+
+export type TemperatureEntry = {
+  id: string;
+  sensorId: string;
+  temperature: number;
+  timestamp: string;
+};
