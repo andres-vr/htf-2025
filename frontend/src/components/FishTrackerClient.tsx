@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import { Fish } from "@/types/fish";
-import Map from "./Map";
-import FishList from "./FishList";
-import FishDetails from "./FishDetails";
+import { useState } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import FishDetails from "./FishDetails";
+import FishList from "./FishList";
+import Map from "./Map";
+import WeatherInfo from "./WeatherInfo";
 
 interface FishTrackerClientProps {
   fishes: Fish[];
@@ -44,6 +45,17 @@ export default function FishTrackerClient({
                 hoveredFishId={hoveredFishId}
                 onFishSelect={setSelectedFish}
               />
+              {/* Show live weather for the selected fish's latest sighting (if available) */}
+              {selectedFish?.latestSighting && (
+                <div className="absolute top-4 right-4 z-20">
+                  <WeatherInfo
+                    lat={selectedFish.latestSighting.latitude}
+                    lon={selectedFish.latestSighting.longitude}
+                    units="metric"
+                    // poll every 60s by default; override if needed
+                  />
+                </div>
+              )}
             </div>
           </Panel>
 

@@ -14,6 +14,7 @@ import { getAllFish, getFishById, getFishByRarity } from "./services/fishService
 import { startFishSightingUpdates, startTemperatureSensorUpdates, } from "./services/scheduledJobService";
 import { fetchFishData } from "./services/serperService";
 import { getAllTemperatureReadings, getTemperatureReadingsForSensorId } from "./services/temperatureReadingService";
+import { getCurrentWeather } from "./services/weatherService";
 
 // Initialize Express application
 const app = express();
@@ -221,6 +222,28 @@ app.get("/api/temperatures/:id", async (req, res) => {
   } catch (error) {
     console.error("Error fetching temperature sensor by id:", error);
     res.status(500).json({error: "Failed to fetch temperature sensor"});
+  }
+});
+
+/**
+ * GET /api/weather
+ * Proxy to OpenWeatherMap current weather. Query params: lat, lon, units (optional)
+ */
+app.get('/api/weather', async (req, res) => {
+  try {
+    const lat = req.query.lat ? Number(req.query.lat) : NaN;
+    const lon = req.query.lon ? Number(req.query.lon) : NaN;
+    const units = String(req.query.units || 'metric') as 'metric' | 'imperial' | 'standard';
+    if (Number.isNaN(lat) || Number.isNaN(lon)) {
+      res.status(400).json({ error: 'lat and lon are required and must be numbers' });
+      return;
+    }
+
+    const payload = await getCurrentWeather(lat, lon, units);
+    res.json({ lat, lon, units, payload });
+  } catch (err) {
+    console.error('Error fetching weather:', err);
+    res.status(502).json({ error: 'Failed to fetch weather' });
   }
 });
 
