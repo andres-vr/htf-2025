@@ -1,0 +1,57 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model DivingCenter {
+  id String @id @default(uuid())
+  name      String
+  latitude  Float
+  longitude Float
+}
+
+model Fish {
+  id        String         @id @default(uuid())
+  name      String
+  image     String?
+  rarity FishRarity?
+  sightings FishSighting[]
+}
+
+model FishSighting {
+  id        String   @id @default(uuid())
+  fishId    String
+  fish      Fish     @relation(fields: [fishId], references: [id])
+  latitude  Float
+  longitude Float
+  timestamp DateTime @default(now())
+}
+
+model TemperatureSensor {
+  id        String               @id @default(uuid())
+  latitude  Float
+  longitude Float
+  readings  TemperatureReading[]
+}
+
+model TemperatureReading {
+  id                  String            @id @default(uuid())
+  temperature         Decimal
+  timestamp           DateTime          @default(now())
+  TemperatureSensor   TemperatureSensor @relation(fields: [temperatureSensorId], references: [id])
+  temperatureSensorId String
+}
+
+enum FishRarity {
+  COMMON
+  RARE
+  EPIC
+}

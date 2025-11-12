@@ -1,0 +1,130 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* Color palette */
+  --color-deep-ocean: #0a1628;
+  --color-dark-navy: #0d1b2a;
+  --color-nautical-blue: #1b263b;
+  --color-ocean-teal: #0d7377;
+  --color-sonar-green: #14ffec;
+  --color-warning-amber: #ffa500;
+  --color-danger-red: #ff4757;
+  --color-panel-border: #2d4059;
+  --color-text-primary: #e0e1dd;
+  --color-text-secondary: #a8dadc;
+
+  /* Semantic colors */
+  --color-background: #0a1628;
+  --color-foreground: #e0e1dd;
+
+  /* Font families */
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* Custom animations */
+  --animate-ping-common: ping-common;
+  --animate-ping-rare: ping-rare;
+  --animate-ping-epic: ping-epic;
+  --animate-scanline: scanline;
+
+  /* Custom shadows for cockpit panels */
+  --shadow-cockpit: 0 0 20px color-mix(in srgb, #14ffec 10%, transparent),
+    inset 0 0 20px color-mix(in srgb, black 50%, transparent);
+  --shadow-cockpit-border: 0 0 10px color-mix(in srgb, #14ffec 15%, transparent),
+    inset 0 0 10px color-mix(in srgb, black 30%, transparent);
+  --shadow-map-panel: 0 4px 20px color-mix(in srgb, #14ffec 10%, transparent);
+  --shadow-glow-common: 0 0 5px #14ffec;
+  --shadow-glow-rare: 0 0 5px #ffa500;
+  --shadow-glow-epic: 0 0 5px #ff4757;
+  --shadow-marker: 0 0 10px currentColor;
+  --shadow-glow-text: 0 0 5px #14ffec, 0 0 10px #14ffec;
+}
+
+@keyframes ping-common {
+  75%,
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes ping-rare {
+  75%,
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes ping-epic {
+  75%,
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes scanline {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100vh);
+  }
+}
+
+/* Animation utility classes */
+.animate-ping-common {
+  animation: ping-common 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.animate-ping-rare {
+  animation: ping-rare 1.2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.animate-ping-epic {
+  animation: ping-epic 0.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.animate-scanline {
+  animation: scanline 8s linear infinite;
+}
+
+body {
+  background: linear-gradient(
+    180deg,
+    var(--color-deep-ocean) 0%,
+    var(--color-dark-navy) 100%
+  );
+  color: var(--color-foreground);
+  font-family: "Courier New", monospace;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+html,
+body,
+#__next {
+  height: 100%;
+  width: 100%;
+}
+
+/* Custom scrollbar - can't be done with Tailwind utilities */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-dark-navy);
+  border: 1px solid var(--color-panel-border);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-ocean-teal);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-sonar-green);
+}
