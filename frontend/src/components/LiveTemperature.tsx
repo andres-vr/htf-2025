@@ -95,10 +95,33 @@ const LiveTemperature: React.FC<Props> = ({ sensorId, pollIntervalMs = 1000, thr
   return (
     <div aria-live="polite">
       {/* Toast container */}
-      <div style={{ position: 'fixed', top: 12, right: 12, zIndex: 9999 }}>
+      <div style={{ position: 'fixed', top: 12, right: 12, zIndex: 9999, display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {toasts.map(t => (
-          <div key={t.id} style={{ background: 'white', padding: '8px 12px', borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.08)', marginBottom: 8, minWidth: 200 }}>
-            <div style={{ fontSize: 12, color: '#0f172a' }}>{t.text}</div>
+          <div
+            key={t.id}
+            style={{
+              background: 'linear-gradient(135deg, #111827 0%, #0b1220 100%)',
+              padding: '12px 16px',
+              borderRadius: 6,
+              boxShadow: '0 0 10px rgba(20, 255, 236, 0.2), inset 0 0 10px rgba(0, 0, 0, 0.3)',
+              border: '1px solid rgba(20, 255, 236, 0.15)',
+              minWidth: 240,
+              animation: 'slideIn 0.3s ease-out, slideOut 0.3s ease-out 4.7s forwards',
+            }}
+          >
+            <div style={{ fontSize: 13, color: '#14ffec', fontFamily: 'monospace', fontWeight: 500, letterSpacing: '0.5px' }}>
+              {t.text}
+            </div>
+            <style>{`
+              @keyframes slideIn {
+                from { transform: translateX(400px); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+              }
+              @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(400px); opacity: 0; }
+              }
+            `}</style>
           </div>
         ))}
       </div>
