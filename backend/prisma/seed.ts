@@ -75,8 +75,8 @@ async function seed() {
                 "rarity": FishRarity.COMMON
             },
             {
-                "name": "White eyed moray",
-                "image": "https://example.com/white_eyed_moray.jpg",
+                "name": "White eyed moray eel",
+                "image": "https://upload.wikimedia.org/wikipedia/commons/a/a4/White_eyed_moray_eel.jpg",
                 "rarity": FishRarity.COMMON
             },
             {
