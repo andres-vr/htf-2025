@@ -4,6 +4,8 @@ import { formatDistanceToNow } from "date-fns";
 import { useEffect, useState } from 'react';
 import LiveTemperature from "./LiveTemperature";
 import TemperatureGraph from "./TemperatureGraph";
+import dynamic from "next/dynamic";
+import FishQuiz from "./FishQuiz";
 
 type TempSensor = {
   id: string;
@@ -19,6 +21,7 @@ export default function FishDetails({ fish }: FishDetailsProps) {
   const [nearestSensorId, setNearestSensorId] = useState<string | undefined>(undefined);
   const [serperData, setSerperData] = useState<{ description: string | null; descriptionLink: string | null; scientificName: string | null } | null>(null);
   const [serperLoading, setSerperLoading] = useState(false);
+  const [showQuiz, setShowQuiz] = useState(false);
 
   useEffect(() => {
     if (!fish) return;
@@ -113,6 +116,14 @@ export default function FishDetails({ fish }: FishDetailsProps) {
         <div className="flex flex-col">
           <div className="text-xs text-text-secondary font-mono mb-1">SPECIES</div>
           <div className={`text-lg font-bold ${getRarityColorClass(fish.rarity)}`}>{fish.name}</div>
+          <div className="mt-2">
+            <button
+              className="px-3 py-1 rounded border border-panel-border text-sm bg-[color-mix(in_srgb,var(--color-sonar-green)_6%,transparent)] hover:bg-[color-mix(in_srgb,var(--color-sonar-green)_10%,transparent)]"
+              onClick={() => setShowQuiz(true)}
+            >
+              Take Quiz
+            </button>
+          </div>
         </div>
         <div className="flex flex-col ml-6">
         <div className="text-xs text-text-secondary font-mono mt-3 mb-1">SCIENTIFIC NAME</div>
@@ -176,6 +187,7 @@ export default function FishDetails({ fish }: FishDetailsProps) {
       {/* Last Seen */}
       {fish.latestSighting && (
         <div>
+        <FishQuiz open={showQuiz} fish={fish} scientificName={serperData?.scientificName ?? null} onClose={() => setShowQuiz(false)} />
           <div className="text-xs text-text-secondary font-mono mb-1">LAST SEEN</div>
           <div className="text-sm text-sonar-green">
             {formatDistanceToNow(new Date(fish.latestSighting.timestamp), { 
