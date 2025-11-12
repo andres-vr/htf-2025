@@ -1,8 +1,9 @@
 "use client";
 
+import { Fish } from "@/types/fish";
 import { UserInfo } from "./AuthProvider";
 import FishTrackerClient from "./FishTrackerClient";
-import { Fish } from "@/types/fish";
+import { BaseSearchBar } from "./SearchBar";
 
 interface FishTrackerLayoutProps {
   fishes: Fish[];
@@ -25,6 +26,7 @@ export default function FishTrackerLayout({ fishes, sortedFishes }: FishTrackerL
             GLOBAL MARINE MONITORING SYSTEM
           </div>
         </div>
+        <BaseSearchBar placeholder="Search a fish" />
         <div className="flex items-center gap-4 text-xs font-mono">
           <div className="border border-panel-border shadow-[--shadow-cockpit-border] px-3 py-1 rounded">
             <span className="text-sonar-green">STATUS:</span>

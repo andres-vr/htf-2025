@@ -7,12 +7,13 @@
  * jobs for updating sightings and temperature readings.
  */
 
-import express from "express";
 import cors from "cors";
-import {getAllDivingCenters} from "./services/divingCenterService";
-import {getAllFish, getFishById} from "./services/fishService";
-import {getAllTemperatureReadings, getTemperatureReadingsForSensorId} from "./services/temperatureReadingService";
-import {startFishSightingUpdates, startTemperatureSensorUpdates,} from "./services/scheduledJobService";
+import express from "express";
+import { FishRarity } from "./generated/prisma";
+import { getAllDivingCenters } from "./services/divingCenterService";
+import { getAllFish, getFishById, getFishByRarity } from "./services/fishService";
+import { startFishSightingUpdates, startTemperatureSensorUpdates, } from "./services/scheduledJobService";
+import { getAllTemperatureReadings, getTemperatureReadingsForSensorId } from "./services/temperatureReadingService";
 
 // Initialize Express application
 const app = express();
@@ -50,6 +51,25 @@ app.get("/api/fish", async (req, res) => {
     res.json(fish);
   } catch (error) {
     console.error("Error fetching fish:", error);
+    res.status(500).json({ error: "Failed to fetch fish" });
+  }
+});
+
+/**
+ * GET /api/fish/rarity/:rarity
+ * Retrieves fish by rarity (EPIC, RARE, COMMON, ALL).
+ * Returns 404 if no fish of that rarity are found.
+ */
+app.get("/api/fish/rarity/:rarity", async (req, res) => {
+  try {
+    const fishes = await getFishByRarity(req.params.rarity as FishRarity);
+    if (!fishes || fishes.length === 0) {
+      res.status(404).json({ error: "Fish not found" });
+      return;
+    }
+    res.json(fishes);
+  } catch (error) {
+    console.error("Error fetching fish by rarity:", error);
     res.status(500).json({ error: "Failed to fetch fish" });
   }
 });

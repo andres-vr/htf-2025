@@ -3,3 +3,9 @@ export const fetchFishes = async () => {
   const data = await response.json();
   return data;
 };
+
+export const fetchFishByRarity = async (rarity: string) => {
+  const response = await fetch(`http://localhost:5555/api/fish/rarity/${rarity}`);
+  const data = await response.json();
+  return data;
+};

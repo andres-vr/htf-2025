@@ -6,7 +6,7 @@
  * sighting data for client consumption.
  */
 
-import {PrismaClient} from '../generated/prisma';
+import { FishRarity, PrismaClient } from '../generated/prisma';
 
 const prisma = new PrismaClient();
 
@@ -84,4 +84,47 @@ export const getFishById = async (id: string) => {
             timestamp: sighting.timestamp
         }))
     };
+};
+
+/**
+ * Retrieves a specific fish by ID with all its sightings.
+ *
+ * This function fetches a single fish along with ALL of its sightings
+ * (unlike getAllFish which only returns the latest sighting). Sighting data
+ * is filtered to only include location and timestamp information.
+ */
+export const getFishByRarity = async (rarity: FishRarity) => {
+    // Fetch the specific fish with all of its sightings
+    let fishes
+    if (rarity === 'ALL') {
+        fishes = await prisma.fish.findMany({
+            include: {
+                sightings: true
+            }
+        });
+    } else {
+    fishes = await prisma.fish.findMany({
+        where: {
+            rarity
+        },
+        include: {
+            sightings: true
+        }});
+    }
+    // Return null if fish doesn't exist
+    if (!fishes) {
+        return null;
+    }
+
+    // Transform sightings to only include relevant location data
+    // This filters out internal database fields (like sighting ID, fishId, etc.)
+    // and provides a clean API response with only what clients need
+    return fishes.map(fish => ({
+        ...fish,
+        sightings: fish.sightings.map(sighting => ({
+            latitude: sighting.latitude,
+            longitude: sighting.longitude,
+            timestamp: sighting.timestamp
+        }))
+    }));
 };
