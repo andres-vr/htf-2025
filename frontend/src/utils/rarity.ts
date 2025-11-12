@@ -22,6 +22,17 @@ export const getRarityColor = (rarity: string): string => {
   }
 };
 
+export const getRarityColorClass = (rarity: string): string => {
+  switch (rarity.toUpperCase()) {
+     case "RARE":
+      return "text-[var(--color-warning-amber)] ";
+    case "EPIC":
+      return "text-[var(--color-danger-red)]";
+    default:
+      return "text-[var(--color-sonar-green)]"; //text-deep-ocean
+  }
+};
+
 export const getRarityBadgeClass = (rarity: string): string => {
   switch (rarity.toUpperCase()) {
     case "RARE":
@@ -30,6 +41,17 @@ export const getRarityBadgeClass = (rarity: string): string => {
       return "bg-danger-red text-deep-ocean";
     default:
       return "bg-sonar-green text-deep-ocean";
+  }
+};
+
+export const getRarityHoverClass = (rarity: string): string => {
+  switch (rarity.toUpperCase()) {
+    case "RARE":
+      return "hover:border-[var(--color-warning-amber)]";
+    case "EPIC":
+      return "hover:border-[var(--color-danger-red)]";
+    default:
+      return "hover:border-[var(--color-sonar-green)]";
   }
 };
 

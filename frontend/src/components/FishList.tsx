@@ -4,9 +4,10 @@ import FishCard from "./FishCard";
 interface FishListProps {
   fishes: Fish[];
   onFishHover: (fishId: string | null) => void;
+  onFishSelect?: (fish: Fish | null) => void;
 }
 
-export default function FishList({ fishes, onFishHover }: FishListProps) {
+export default function FishList({ fishes, onFishHover, onFishSelect }: FishListProps) {
   return (
     <div className="w-full h-full bg-[color-mix(in_srgb,var(--color-dark-navy)_85%,transparent)] border-2 border-panel-border shadow-[--shadow-cockpit] backdrop-blur-[10px] overflow-hidden flex flex-col">
       {/* Section Header */}
@@ -34,7 +35,9 @@ export default function FishList({ fishes, onFishHover }: FishListProps) {
       <div className="flex-1 overflow-y-auto px-6 py-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
           {fishes.map((fish) => (
-            <FishCard key={fish.id} fish={fish} onHover={onFishHover} />
+            <div key={fish.id} onClick={() => onFishSelect?.(fish)}>
+              <FishCard fish={fish} onHover={onFishHover} />
+            </div>
           ))}
         </div>
       </div>
