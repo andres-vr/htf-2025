@@ -3,7 +3,7 @@ class SerperClient {
   private baseUrl: string;
 
   constructor() {
-    this.apiKey = '646676cc8646b0de1251d4329b3b5d0141dbc88c';
+    this.apiKey = '26b71eb79b6025e8dbef55c1e9de412b52451e82';
     this.baseUrl = 'https://google.serper.dev';
   }
 
