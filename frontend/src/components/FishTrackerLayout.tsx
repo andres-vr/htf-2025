@@ -39,8 +39,9 @@ export default function FishTrackerLayout({ fishes, sortedFishes }: FishTrackerL
           {/* Global Quiz Button (moved left of STATUS) */}
           <div>
             <button
-              className="px-3 py-1 rounded border border-panel-border bg-[color-mix(in_srgb,var(--color-sonar-green)_6%,transparent)] hover:bg-[color-mix(in_srgb,var(--color-sonar-green)_10%,transparent)]"
+              className="px-3 py-1 rounded border shadow-[--shadow-cockpit-border] hover:bg-[color-mix(in_srgb,var(--color-sonar-green)_6%,transparent)]"
               onClick={() => setQuizOpen(true)}
+              style={{ color: 'var(--color-sonar-green)', borderColor: 'var(--color-sonar-green)' }}
             >
               Quiz
             </button>
