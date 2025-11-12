@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
-import Map, { MapRef, Source, Layer } from "react-map-gl/maplibre";
-import "maplibre-gl/dist/maplibre-gl.css";
 import { Fish } from "@/types/fish";
+import "maplibre-gl/dist/maplibre-gl.css";
+import { useEffect, useRef, useState } from "react";
+import Map, { Layer, MapRef, Source } from "react-map-gl/maplibre";
 import FishMarker from "./FishMarker";
 
 interface MapComponentProps {

@@ -4,7 +4,10 @@
  * the absence and fall back to a non-AI strategy.
  */
 export async function callOpenAI(prompt: string, max_tokens = 256, model = 'gpt-3.5-turbo') {
-  const key = "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";
+  // Read the OpenAI key from environment variables. Do NOT commit secrets into
+  // source control. If you need to run locally, set OPENAI_API_KEY in your
+  // environment or use a .env file (which must be added to .gitignore).
+  const key = process.env.OPENAI_API_KEY || process.env.OPENAI_KEY || '';
   if (!key) throw new Error('OPENAI_API_KEY not configured');
 
   const body = {
